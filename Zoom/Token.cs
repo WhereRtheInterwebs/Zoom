@@ -15,13 +15,18 @@ namespace Zoom
 
         public Token()
         {
-            var settings = AppSettings.FromJson(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "settings.json")));
+            string settingsPath = Path.Combine(Environment.CurrentDirectory, "settings.json");
+
+            var settings = AppSettings.FromJson(File.ReadAllText(settingsPath));
+
+            int KeyMaxIndex = settings.Keys.Length - 1;
+            settings.LastKeyIndexUsed = settings.LastKeyIndexUsed + 1 > KeyMaxIndex ? 0 : settings.LastKeyIndexUsed + 1;
 
             DateTime Expiry = DateTime.UtcNow.AddMinutes(20);
 
             int ts = (int)(Expiry - new DateTime(1970, 1, 1)).TotalSeconds;
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.ApiSecret));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Keys[settings.LastKeyIndexUsed].ApiSecret));
 
             // length should be >256b
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -32,12 +37,14 @@ namespace Zoom
             //Zoom Required Payload
             var payload = new JwtPayload
             {
-                { "iss", settings.ApiKey},
+                { "iss", settings.Keys[settings.LastKeyIndexUsed].ApiKey},
                 { "exp", ts },
             };
 
             SecurityToken        = new JwtSecurityToken(header, payload);
             SecurityTokenHandler = new JwtSecurityTokenHandler();
+
+            File.WriteAllText(settingsPath, settings.ToJson());
         }
 
         public static implicit operator string(Token token) => token._token;
