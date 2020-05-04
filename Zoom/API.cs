@@ -31,6 +31,9 @@ namespace Zoom
             return ZoomRequest($"/users/{UserID}/meetings", Method.POST, meeting);
         }
 
+        public static Meeting DeleteMeeting(long MeetingID) => 
+            ZoomRequest($"/meetings/{MeetingID}", Method.DELETE);
+
         public static RestResponse ZoomRequest(string ApiTarget, Method Method = Method.GET, IJsonObject Body = null)
         {
             var client = new RestClient(BaseApiTarget + ApiTarget);
