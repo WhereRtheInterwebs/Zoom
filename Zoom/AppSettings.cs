@@ -1,16 +1,14 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Zoom.Models
 {
     public partial class AppSettings
     {
-        public int LastKeyIndexUsed { get; set; }
-        public Keys[] Keys { get; set; }
-    }
-
-    public class Keys
-    {
+        [JsonProperty("ApiKey")]
         public string ApiKey { get; set; }
+
+        [JsonProperty("ApiSecret")]
         public string ApiSecret { get; set; }
     }
 
