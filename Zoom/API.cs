@@ -1,7 +1,6 @@
 ﻿using RestSharp;
 using System;
 using Zoom.Models;
-using System.Linq;
 
 namespace Zoom
 {
@@ -15,8 +14,16 @@ namespace Zoom
         public static Meeting[] GetMeetingsByUser(string UserID) => 
             (MeetingList)ZoomRequest($"/users/{UserID}/meetings");
 
-        public static Meeting CreateMeeting(string UserID, string Topic, Models.Type Type, DateTime StartTime, int DurationMinutes)
+        public static Meeting CreateMeeting(string UserID, string Topic, Models.Type Type, DateTime StartTime, int DurationMinutes, Settings Settings = null)
         {
+            string password = "";
+            Random random = new Random();
+            for (int i = 0; i < 6; i++)
+            {
+                double flt = random.NextDouble();
+                password += Math.Floor(flt * 10).ToString();
+            }
+
             var meeting = new Meeting()
             {
                 Topic       = Topic,
@@ -24,12 +31,23 @@ namespace Zoom
                 StartTime   = StartTime,
                 Duration    = DurationMinutes,
                 ScheduleFor = UserID,
-                Password    = "34567789",
-                Timezone    = "America/Chicago"
+                Password    = password,
+                Timezone    = "America/Chicago",
+                Settings    = Settings
             };
+            
+            var response = ZoomRequest($"/users/{UserID}/meetings", Method.POST, meeting);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Ambiguous)
+                throw new Exception("Maximum number of meetings have been scheduled for this user today");
+            else if (response.StatusCode != System.Net.HttpStatusCode.Created)
+                throw new Exception("Unable to create Zoom meeting.  " + response.ErrorMessage);
 
-            return ZoomRequest($"/users/{UserID}/meetings", Method.POST, meeting);
+            return response;
         }
+
+        public static RestResponse UpdateMeeting(long MeetingID, Meeting Meeting) =>
+            ZoomRequest($"/meetings/{MeetingID}", Method.PATCH, Meeting);
 
         public static Meeting DeleteMeeting(long MeetingID) => 
             ZoomRequest($"/meetings/{MeetingID}", Method.DELETE);

@@ -2,8 +2,7 @@
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
-using Zoom.Models;
-using System.IO;
+using System.Configuration;
 
 namespace Zoom
 {
@@ -15,13 +14,11 @@ namespace Zoom
 
         public Token()
         {
-            var settings = AppSettings.FromJson(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "settings.json")));
-
             DateTime Expiry = DateTime.UtcNow.AddMinutes(20);
 
             int ts = (int)(Expiry - new DateTime(1970, 1, 1)).TotalSeconds;
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.ApiSecret));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["ApiSecret"]));
 
             // length should be >256b
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -32,7 +29,7 @@ namespace Zoom
             //Zoom Required Payload
             var payload = new JwtPayload
             {
-                { "iss", settings.ApiKey},
+                { "iss", ConfigurationManager.AppSettings["ApiKey"]},
                 { "exp", ts },
             };
 
