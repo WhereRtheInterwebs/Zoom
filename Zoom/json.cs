@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.Globalization;
 using Zoom.Models;
 
 namespace Zoom
@@ -8,6 +6,8 @@ namespace Zoom
     public static class Serialize
     {
         public static string ToJson(this MeetingList self) => JsonConvert.SerializeObject(self, Converter.Settings);
+
+        public static string ToJson(this User self) => JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
     internal static class Converter

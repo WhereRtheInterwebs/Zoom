@@ -46,7 +46,7 @@ namespace Zoom.Models
         public string Topic { get; set; }
 
         [JsonProperty("type")]
-        public @Type Type { get; set; }
+        public MeetingType Type { get; set; }
 
         [JsonProperty("uuid")]
         public string Uuid { get; set; }
@@ -138,7 +138,7 @@ namespace Zoom.Models
         public string Type { get; set; }
     }
 
-    public enum @Type
+    public enum MeetingType
     {
         Instant              = 1,
         Scheduled            = 2,
